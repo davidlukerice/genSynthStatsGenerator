@@ -10,6 +10,31 @@ function log(msg) {
     $('.output').append('<span>'+msg+'</span><br>');
 }
 
+function instrumentsFor(user) {
+    return _.filter(instruments, function(instrument) {
+        return instrument.user === user.id;
+    });
+}
+function starsForUserInstruments(user) {
+    var userInstruments = instrumentsFor(user);
+    return _.reduce(userInstruments, function(acc, instrument) {
+        return acc + instrument.stars.length;
+    }, 0);
+}
+function branchesForUserInstruments(user) {
+    var userInstruments = instrumentsFor(user);
+    return _.reduce(userInstruments, function(acc, instrument) {
+        return acc + instrument.branchedChildren.length;
+    }, 0);
+}
+function branchedOtherInstruments(user) {
+    var userInstruments = instrumentsFor(user);
+    return _.filter(userInstruments, function(instrument) {
+        return !!instrument.branchedParent;
+    }).length;
+}
+
+
 $(function() {
     log('*** Users ***');
     log('count: '+users.length);
@@ -19,12 +44,48 @@ $(function() {
 
     log();
     log('users by number instruments');
-    var usersByInstruments = _.sort(users, function() {
-
+    var usersByInstruments = _.sortBy(users, function(user) {
+        return -1*user.instruments.length;
+    });
+    _.forEach(usersByInstruments, function(user) {
+        log(user.username+' '+user.instruments.length);
     });
 
+    log();
+    log('users by number stars received for instruments');
+    var usersByStarsReceived = _.sortBy(users, function(user) {
+        return -1*starsForUserInstruments(user);
+    });
+    _.forEach(usersByStarsReceived, function(user) {
+        log(user.username+' '+starsForUserInstruments(user));
+    });
 
+    log();
+    log('users by number stars given');
+    var usersByStarsGiven = _.sortBy(users, function(user) {
+        return -1*user.stars.length;
+    });
+    _.forEach(usersByStarsGiven, function(user) {
+        log(user.username+' '+user.stars.length);
+    });
 
+    log();
+    log('users by number branches for created instruments');
+    var usersByBranchedsReceived = _.sortBy(users, function(user) {
+        return -1*branchesForUserInstruments(user);
+    });
+    _.forEach(usersByBranchedsReceived, function(user) {
+        log(user.username+' '+branchesForUserInstruments(user));
+    });
+
+    log();
+    log('users by number instruments branched from others');
+    var usersByBranchesGiven = _.sortBy(users, function(user) {
+        return -1*branchedOtherInstruments(user);
+    });
+    _.forEach(usersByBranchesGiven, function(user) {
+        log(user.username+' '+branchedOtherInstruments(user));
+    });
 
     log();
     log('*** Instruments ***')
